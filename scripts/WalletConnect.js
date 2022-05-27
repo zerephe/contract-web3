@@ -7,28 +7,28 @@ let network;
 const connectBtn = document.getElementById("connectWallet");
 connectBtn.innerText = "Connect Wallet";
 
-connectBtn.addEventListener("click", ()=>{
-    connectWallet();
+connectBtn.addEventListener("click", () => {
+  connectWallet();
 });
 
 const mintBtn = document.getElementById("mint");
 
-mintBtn.addEventListener("click", ()=>{
+mintBtn.addEventListener("click", () => {
   mint(65646);
 });
 
 const providerOptions = {
   injected: {
     display: {
-      name: 'Metamask',
-      description: 'Connect with the provider in your Browser',
+      name: "Metamask",
+      description: "Connect with the provider in your Browser",
     },
     package: null,
   },
   walletconnect: {
     display: {
-      name: 'WalletConnect',
-      description: 'Scan qrcode with your mobile wallet',
+      name: "WalletConnect",
+      description: "Scan qrcode with your mobile wallet",
     },
     package: WalletConnectProvider.default,
     options: {
@@ -47,45 +47,44 @@ const web3Modal = new Web3Modal.default({
   providerOptions,
 });
 
-if(web3Modal.cachedProvider) {
+if (web3Modal.cachedProvider) {
   connectWallet(true);
 }
 
-async function connectWallet (cached) {
+async function connectWallet(cached) {
   try {
-    if(cached) {
+    if (cached) {
       instance = await web3Modal.connectTo(web3Modal.cachedProvider);
-      console.log('Opening a dialog', web3Modal);
-    }
-    else {
+      console.log("Opening a dialog", web3Modal);
+    } else {
       instance = await web3Modal.connect();
-      console.log('Opening a dialog', web3Modal);
+      console.log("Opening a dialog", web3Modal);
     }
   } catch (e) {
-    console.log('Could not get a wallet connection', e);
+    console.log("Could not get a wallet connection", e);
     return;
   }
 
   provider = new ethers.providers.Web3Provider(instance);
 
-  instance.on('accountsChanged', () => {
+  instance.on("accountsChanged", () => {
     fetchAccountData();
   });
 
-  instance.on('chainChanged', () => {
+  instance.on("chainChanged", () => {
     fetchAccountData();
   });
 
-  instance.on('disconnect', () => {
+  instance.on("disconnect", () => {
     disconnect();
   });
-  
+
   await fetchAccountData();
 }
 
-async function fetchAccountData () {
+async function fetchAccountData() {
   // Get a Web3 instance for the wallet
-  provider = new ethers.providers.Web3Provider(instance, 'any');
+  provider = new ethers.providers.Web3Provider(instance, "any");
   console.log(provider);
   // Get connected chain id from Ethereum node
   network = await provider.getNetwork();
@@ -100,33 +99,31 @@ async function fetchAccountData () {
   if (network.chainId !== 4 && network.chainId !== 1) {
     connectBtn.innerText = "Wrong network";
     mintBtn.disabled = true;
-  }
-  else {
+  } else {
     connectBtn.innerText = signerAddress;
     mintBtn.disabled = false;
   }
 }
 
 async function mint(amount) {
-  if(instance){
-      const contractAddress = "0x7a73017403F934f56DA85Cc5F9724eedf7a271bB";
+  if (instance) {
+    const contractAddress = "0x7a73017403F934f56DA85Cc5F9724eedf7a271bB";
 
-      const iface = new ethers.utils.Interface([
-      "function mint(address to, uint256 amount)"
-      ]);
-      const FormatTypes = ethers.utils.FormatTypes;
-      iface.format(FormatTypes.json)
-      const contract = new ethers.Contract(contractAddress, iface, signer);
+    const iface = new ethers.utils.Interface([
+      "function mint(address to, uint256 amount)",
+    ]);
+    const FormatTypes = ethers.utils.FormatTypes;
+    iface.format(FormatTypes.json);
+    const contract = new ethers.Contract(contractAddress, iface, signer);
 
-      try {
-        await contract.mint(signerAddress, amount);
-      } catch (e) {
-        console.log(e);
-        return;
-      }
-  } 
-  else {
-      console.log("Please install Metamask extention.");
+    try {
+      await contract.mint(signerAddress, amount);
+    } catch (e) {
+      console.log(e);
+      return;
+    }
+  } else {
+    console.log("Please install Metamask extention.");
   }
 }
 
@@ -142,7 +139,7 @@ async function sign(msg) {
       return;
     }
   } else {
-    return false
+    return false;
   }
 }
 
@@ -164,5 +161,5 @@ async function disconnect() {
   await web3Modal.clearCachedProvider();
   refreshState();
 }
-  
+
 export default { connectWallet, mint, disconnect, sign };
