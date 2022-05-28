@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "dotenv": "^16.0.1"
+  },
+  "name": "contract-web3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zerephe/contract-web3.git"
+  },
+  "author": "Bekn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zerephe/contract-web3/issues"
+  },
+  "homepage": "https://github.com/zerephe/contract-web3#readme",
+  "description": ""
+}

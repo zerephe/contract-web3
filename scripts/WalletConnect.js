@@ -1,3 +1,7 @@
+import env from "../env.json" assert {type: 'json'};
+import contractAbi from "../ContractAbi.json" assert {type: 'json'};
+
+
 let instance;
 let provider;
 let signer;
@@ -11,10 +15,11 @@ connectBtn.addEventListener("click", () => {
   connectWallet();
 });
 
-const mintBtn = document.getElementById("mint");
+const getThePassBtn = document.getElementById("mint");
 
-mintBtn.addEventListener("click", () => {
-  mint(65646);
+getThePassBtn.addEventListener("click", () => {
+  // mint(65646);
+  displayContractDetails();
 });
 
 const providerOptions = {
@@ -33,15 +38,15 @@ const providerOptions = {
     package: WalletConnectProvider.default,
     options: {
       rpc: {
-        1: "https://cloudflare-eth.com/", // https://ethereumnodes.com/
-        4: "https://eth-rinkeby.alchemyapi.io/v2/pl3KI0ZWC8fmnRtSO83jJdncYIaoPq-A/", // https://eth-rinkeby.alchemyapi.io
+        1: env.mainnetRpc, // https://ethereumnodes.com/
+        4: env.rinkebyRpc, // https://eth-rinkeby.alchemyapi.io
       },
     },
   },
 };
 
 const web3Modal = new Web3Modal.default({
-  theme: "dark",
+  theme: "light",
   network: "rinkeby",
   cacheProvider: true,
   providerOptions,
@@ -98,23 +103,17 @@ async function fetchAccountData() {
   // Applying wallet address to the page
   if (network.chainId !== 4 && network.chainId !== 1) {
     connectBtn.innerText = "Wrong network";
-    mintBtn.disabled = true;
+    getThePassBtn.disabled = true;
   } else {
-    connectBtn.innerText = signerAddress;
-    mintBtn.disabled = false;
+    connectBtn.innerText = "".concat(signerAddress.slice(0, 12), "...");
+    getThePassBtn.disabled = false;
   }
 }
 
 async function mint(amount) {
   if (instance) {
-    const contractAddress = "0x7a73017403F934f56DA85Cc5F9724eedf7a271bB";
-
-    const iface = new ethers.utils.Interface([
-      "function mint(address to, uint256 amount)",
-    ]);
-    const FormatTypes = ethers.utils.FormatTypes;
-    iface.format(FormatTypes.json);
-    const contract = new ethers.Contract(contractAddress, iface, signer);
+    const contractAddress = env.contractAddress;
+    const contract = new ethers.Contract(contractAddress, contractAbi, signer);
 
     try {
       await contract.mint(signerAddress, amount);
@@ -122,6 +121,26 @@ async function mint(amount) {
       console.log(e);
       return;
     }
+  } else {
+    console.log("Please install Metamask extention.");
+  }
+}
+
+async function displayContractDetails() {
+  if (instance) {
+    const contractAddress = env.contractAddress;
+    const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+
+    let balance;
+
+    try {
+      balance = await contract.balanceOf(signerAddress);
+    } catch (e) {
+      console.log(e);
+      return;
+    }
+
+    console.log(balance.toNumber().toString());
   } else {
     console.log("Please install Metamask extention.");
   }
@@ -153,7 +172,7 @@ function refreshState() {
 
   // Reset UI
   connectBtn.innerText = "Connect Wallet";
-  mintBtn.disabled = true;
+  getThePassBtn.disabled = true;
 }
 
 async function disconnect() {
@@ -162,4 +181,3 @@ async function disconnect() {
   refreshState();
 }
 
-export default { connectWallet, mint, disconnect, sign };
